@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{E158978F-FE05-4657-9AC0-EF4BA1B67CC5}</ProjectGuid>
-    <RootNamespace>SolutionForTests</RootNamespace>
+    <ProjectGuid>{F85F1529-6EC2-40AA-8632-6FC451862B31}</ProjectGuid>
+    <RootNamespace>DiscordCXX</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -123,11 +123,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Credentials.h" />
-    <ClInclude Include="Headers.h" />
+    <ClCompile Include="DiscordCxxBot.cpp" />
+    <ClCompile Include="DiscordHeaders.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp" />
+    <ClInclude Include="DiscordCxxBot.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
