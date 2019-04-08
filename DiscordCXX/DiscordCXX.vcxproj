@@ -127,7 +127,9 @@
     <ClCompile Include="DiscordHeaders.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DiscordConstants.h" />
     <ClInclude Include="DiscordCxxBot.h" />
+    <ClInclude Include="Snowflake.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

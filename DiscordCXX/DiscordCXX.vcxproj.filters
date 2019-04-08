@@ -26,5 +26,11 @@
     <ClInclude Include="DiscordCxxBot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DiscordConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Snowflake.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
