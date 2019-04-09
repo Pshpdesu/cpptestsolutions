@@ -15,6 +15,6 @@ web::http::http_request DiscordCxxBot::GetBaseRequestBuilder(web::http::method m
 {
 	web::http::http_request reqst(method);
 	reqst.headers().add<std::wstring>(L"Authorization", _Token);
-	reqst.headers().add<std::wstring>(L"User-Agent", "DiscordBot/0.01");
+	reqst.headers().add<std::wstring>(L"User-Agent", L"DiscordBot/0.01");
 	return std::move(reqst);
 }
