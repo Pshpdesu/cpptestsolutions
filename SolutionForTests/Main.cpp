@@ -26,18 +26,11 @@ int FindMax(std::vector<int>&& gays) {
 				else {
 					gays[i] -= neededcount;
 					gays[j] -= neededcount;
-					gays[i + j + 1] += neededcount;
+					gays[i + j + 1] += neededcount;	
 				}
+				if(neededcount > 0) j += i+2;
 			}
 			j--;
-			/*int possiblefillofgays = gays[i] / (j+1);
-			if (possiblefillofgays != 0) {
-				gays[j] -= possiblefillofgays;
-				gays[i] -= possiblefillofgays * (maxgays - j+1);
-				j--;
-			} else {
-				j--;
-			}*/
 		}
 	}
 	return std::accumulate(gays.begin(), gays.end(), 0);
