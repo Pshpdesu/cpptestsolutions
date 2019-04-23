@@ -9,6 +9,24 @@ using namespace std;
 
 const int nGroups = 4;
 
+void PrepareData(std::vector<int>& gays) {
+	if (gays[1] % 2 == 1) {
+		int take = gays[0] > 0 ? 1 : 0;
+		gays[1] -= take;
+		gays[0] -= take;
+		gays[2] += take;
+	}
+	if (gays[1] > gays[0]) {
+		int take = gays[1] / 2;
+		gays[1] -= take*2;
+		gays[3] += take;
+	}
+	int take = min(gays[2], gays[0]);
+	gays[2] -= take;
+	gays[0] -= take;
+	gays[3] += take;
+}
+
 int FindMax(std::vector<int>&& gays) {
 	int gayscount = gays.size();
 	size_t maxgays = gays.size();
@@ -45,6 +63,7 @@ int main() {
 		std::cin >> val;
 		groups[val - 1]++;
 	}
+	PrepareData(groups);
 	std::cout << FindMax(std::move(groups));
 	return 0;
 }
