@@ -9,48 +9,45 @@ using namespace std;
 
 const int nGroups = 4;
 
-void PrepareData(std::vector<int>& gays) {
+int PrepareData(std::vector<int>& gays) {
+
+	//groups of 1 and 3 gays
+	int take = min(gays[2], gays[0]);
+	gays[2] -= take;
+	gays[0] -= take;
+	gays[3] += take;
+
 	if (gays[1] % 2 == 1) {
 		int take = gays[0] > 0 ? 1 : 0;
 		gays[1] -= take;
 		gays[0] -= take;
 		gays[2] += take;
 	}
+
+	//groups what contains 2 gays
 	if (gays[1] > gays[0]) {
 		int take = gays[1] / 2;
 		gays[1] -= take*2;
 		gays[3] += take;
 	}
-	int take = min(gays[2], gays[0]);
-	gays[2] -= take;
-	gays[0] -= take;
-	gays[3] += take;
-}
 
-int FindMax(std::vector<int>&& gays) {
-	int gayscount = gays.size();
-	size_t maxgays = gays.size();
-	
-	for (int i = 0; i < gayscount - 1; ++i) {
-		int j = gayscount-2;
-		while (gays[i] > 0 && j>=i) {
-			if (i + j + 1 < gayscount) {
-				int neededcount = min(gays[i], gays[j]);
-				if (i == j) {
-					neededcount /= 2;
-					gays[i] -= neededcount*2;
-					gays[i + j + 1] += neededcount;
-				}
-				else {
-					gays[i] -= neededcount;
-					gays[j] -= neededcount;
-					gays[i + j + 1] += neededcount;	
-				}
-				if(neededcount > 0) j += i+2;
-			}
-			j--;
-		}
+	if (gays[0] > 1) {
+		int pairs = gays[0] / 2;
+		gays[0] -= pairs*2;
+		gays[1] += pairs;
 	}
+	if (gays[1] > 1) {
+		int pairs = gays[1] / 2;
+		gays[1] -= pairs*2;
+		gays[3] += pairs;
+	}
+
+	if (gays[0] == 1 && gays[1] > 0) {
+		gays[0]--;
+		gays[1]--;
+		gays[2]++;
+	}
+
 	return std::accumulate(gays.begin(), gays.end(), 0);
 }
 
@@ -63,7 +60,6 @@ int main() {
 		std::cin >> val;
 		groups[val - 1]++;
 	}
-	PrepareData(groups);
-	std::cout << FindMax(std::move(groups));
+	std::cout << PrepareData(groups);
 	return 0;
 }
