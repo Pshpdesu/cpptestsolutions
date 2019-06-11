@@ -1,4 +1,7 @@
-#pragma once
 #include <iostream>
+#include <string>
+#include <string_view>
 
-#include "../Extensions/TestHeader.h"
+#include "../DiscordCXX/DiscordCxxBot.h"
+#include "../DiscordCXX/DiscordConstants.h"
+#include "Credentials.h"

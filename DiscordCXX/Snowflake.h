@@ -1,11 +1,10 @@
 #pragma once
-#include "DiscordHeaders.h"
+#include <iostream>
 
 class Snowflake
 {
 public:
-	Snowflake() :Snowflake(0) {};
-	Snowflake(uint64_t snowflake) :_snowflake(snowflake) {}
+	Snowflake(uint64_t snowflake=0) :_snowflake(snowflake) {};
 	uint64_t Timestamp() {
 		(_snowflake >> 22) + 1420070400000;
 	}
@@ -18,7 +17,8 @@ public:
 	uint16_t Increment() {
 		return _snowflake & 0xFFF;
 	}
-	~Snowflake();
+	~Snowflake() {
+	};
 private:
 	uint64_t _snowflake;
 

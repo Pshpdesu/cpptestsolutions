@@ -18,18 +18,15 @@
     <ClCompile Include="DiscordHeaders.h">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="DiscordCxxBot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DiscordCxxBot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DiscordConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Snowflake.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DiscordCxxBot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
