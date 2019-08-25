@@ -17,7 +17,11 @@ class DiscordCxxBot
 public:
 	DiscordCxxBot(std::wstring token, std::wstring permissions)
 		:_token(token), _permissions(permissions),
-		_httpClient(Discord::Constants::Paths::URIBASE) {
+		_base_uri(Discord::Constants::Paths::URIBASE
+			+ Discord::Constants::Paths::APIBASE
+			+ Discord::Constants::Paths::APIVERSION),
+		_httpClient(_base_uri)
+	{
 		ConnectToWebSocket();
 	}
 
@@ -30,34 +34,40 @@ public:
 		return _httpClient.request(reqst);
 	}
 
-	~DiscordCxxBot(){}
+	~DiscordCxxBot() {}
 
 private:
 	const std::wstring _token = L"";
 	const std::wstring _permissions = L"";
+	const std::wstring _base_uri = L"";
 	web::http::client::http_client _httpClient;
-	
+	uint32_t heartbeat = -1;
+
 	web::web_sockets::client::websocket_client _wsClient;
 	void ConnectToWebSocket() {
-		auto gateway = SendRequest(web::http::methods::GET, L"/gateway/bot").get();
-		auto a = gateway.extract_string().get();
+		auto gateway_resp = SendRequest(web::http::methods::GET, L"/gateway/bot").get();
+		auto gateway_endpoint = gateway_resp.extract_json().get();
 		using namespace web::web_sockets::client;
-		web::json::object msg();
+
 
 		websocket_client_config config;
-		_wsClient = websocket_client();
+		_wsClient.connect(gateway_endpoint[L"url"].as_string() + L"?v=6&encoding=json")
+			.then([]());
+		//auto hello_message = web::json::value(_wsClient.receive().get().extract_string().get());
+		//hello_message[L"d"][L"heartbeat_interval"];
 	}
 
 	web::http::http_request GetBaseRequestBuilder(web::http::method method)
 	{
 		web::http::http_request reqst(method);
-		reqst.headers().add<std::wstring>(L"Authorization", _token);
+		auto test = reqst.absolute_uri();
+		reqst.headers().add<std::wstring>(L"Authorization", L"Bot " + _token);
 		reqst.headers().add<std::wstring>(L"User-Agent", L"DisCxx (html://none.com, v0.1)");
-		
-		reqst._set_base_uri(Discord::Constants::Paths::URIBASE);
+
+		reqst._set_base_uri(_base_uri);
 		reqst.headers().set_content_type(L"application/json");
 		return std::move(reqst);
 	}
-	
+
 };
 

@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DiscordCredentials.h" />
     <ClCompile Include="DiscordHeaders.h" />
   </ItemGroup>
   <ItemGroup>

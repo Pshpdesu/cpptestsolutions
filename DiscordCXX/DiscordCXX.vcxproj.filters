@@ -18,6 +18,9 @@
     <ClCompile Include="DiscordHeaders.h">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="DiscordCredentials.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DiscordConstants.h">

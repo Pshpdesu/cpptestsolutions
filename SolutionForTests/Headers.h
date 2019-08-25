@@ -4,4 +4,4 @@
 
 #include "../DiscordCXX/DiscordCxxBot.h"
 #include "../DiscordCXX/DiscordConstants.h"
-#include "Credentials.h"
+#include "../DiscordCXX/DiscordCredentials.h"
