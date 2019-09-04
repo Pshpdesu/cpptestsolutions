@@ -123,11 +123,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DiscordCredentials.h" />
     <ClCompile Include="DiscordHeaders.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DiscordConstants.h" />
+    <ClInclude Include="DiscordCredentials.h" />
     <ClInclude Include="DiscordCxxBot.h" />
     <ClInclude Include="Snowflake.h" />
   </ItemGroup>

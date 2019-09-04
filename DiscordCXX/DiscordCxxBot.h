@@ -15,7 +15,7 @@
 class DiscordCxxBot
 {
 public:
-	DiscordCxxBot(std::wstring token, std::wstring permissions)
+	DiscordCxxBot(std::wstring token, std::wstring permissions = L"")
 		:_token(token), _permissions(permissions),
 		_base_uri(Discord::Constants::Paths::URIBASE
 			+ Discord::Constants::Paths::APIBASE
@@ -44,6 +44,7 @@ private:
 	uint32_t heartbeat = -1;
 
 	web::web_sockets::client::websocket_client _wsClient;
+	web::web_sockets::client::websocket_callback_client _wsClbckClient;
 	void ConnectToWebSocket() {
 		auto gateway_resp = SendRequest(web::http::methods::GET, L"/gateway/bot").get();
 		auto gateway_endpoint = gateway_resp.extract_json().get();
@@ -51,8 +52,17 @@ private:
 
 
 		websocket_client_config config;
-		_wsClient.connect(gateway_endpoint[L"url"].as_string() + L"?v=6&encoding=json")
-			.then([]());
+		typedef Concurrency::streams::istream govno;
+		_wsClient.connect(gateway_endpoint[L"url"].as_string() + L"?v=6&encoding=json");
+		auto connection_res = _wsClient.receive().then([this](websocket_incoming_message msg) {return msg.body(); })
+			.then([this](govno body)
+				{
+					return web::json::value(body);
+				}
+		).get();
+		if (connection_res.has_field(L"d") && connection_res[L"d"].has_field(L"heartbeat_interval")) {
+			heartbeat = connection_res[L"d"][L"heartbeat_interval"].as_number().to_int32();
+		}
 		//auto hello_message = web::json::value(_wsClient.receive().get().extract_string().get());
 		//hello_message[L"d"][L"heartbeat_interval"];
 	}
