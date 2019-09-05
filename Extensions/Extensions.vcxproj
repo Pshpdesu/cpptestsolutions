@@ -123,7 +123,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ConcurrentLogger.h" />
+    <ClInclude Include="FileLogger.h" />
+    <ClInclude Include="ILogger.h" />
+    <ClInclude Include="SimpleConsoleLogger.h" />
     <ClInclude Include="TestHeader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SimpleConsoleLogger.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

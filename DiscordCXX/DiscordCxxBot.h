@@ -53,6 +53,9 @@ private:
 
 		websocket_client_config config;
 		typedef Concurrency::streams::istream govno;
+		_wsClbckClient.set_message_handler([](const websocket_incoming_message msg) {
+			
+			});
 		_wsClient.connect(gateway_endpoint[L"url"].as_string() + L"?v=6&encoding=json");
 		auto connection_res = _wsClient.receive().then([this](websocket_incoming_message msg) {return msg.body(); })
 			.then([this](govno body)
@@ -65,6 +68,10 @@ private:
 		}
 		//auto hello_message = web::json::value(_wsClient.receive().get().extract_string().get());
 		//hello_message[L"d"][L"heartbeat_interval"];
+	}
+
+	void process_messages(const web::websockets::client::websocket_incoming_message msg) {
+
 	}
 
 	web::http::http_request GetBaseRequestBuilder(web::http::method method)
