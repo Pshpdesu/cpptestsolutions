@@ -22,14 +22,18 @@ public:
 	virtual bool Log(const std::string& val) override
 	{
 		std::scoped_lock<std::mutex> lock(_mtx);
-		return _logger->Log(val);
+		return _logger->Log(val+"\n");
 	}
 	virtual ~ConcurrentLogger()
 	{
 	}
 
 	virtual ILogger& operator<<(const std::string& val) override {
-		*_logger << val << "\n";
+		Log(val);
+		return *this;
+	};
+	virtual ILogger& operator<<(const std::wstring& val) override {
+		ILogger::Log(val);
 		return *this;
 	};
 private:

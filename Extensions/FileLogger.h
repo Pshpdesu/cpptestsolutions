@@ -28,6 +28,11 @@ public:
 		fs << val;
 		return fs.good();
 	}
+	virtual bool Log(const std::wstring& val) override
+	{
+		fs << wstring_to_string(val);
+		return fs.good();
+	}
 
 	virtual ~FileLogger()
 	{
@@ -37,9 +42,21 @@ public:
 	// Inherited via ILogger
 	virtual ILogger& operator<<(const std::string& val) override
 	{
-		fs << val;
+		Log(val);
 		return *this;
+	
 	}
+	virtual ILogger& operator<<(const std::wstring& val) override
+	{
+		Log(val);
+		return *this;
+
+	}
+	//virtual std::ostream& operator<<(std::ostream& os) override {
+	//	fs << os.rdbuf();
+	//	return os;
+	//};
 private:
 	std::fstream fs;
+
 };

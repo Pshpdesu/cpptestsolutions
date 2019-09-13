@@ -7,3 +7,4 @@
 #include "../DiscordCXX/DiscordCredentials.h"
 
 #include "..//Extensions//ConcurrentLogger.h"
+#include "..//Extensions//SimpleConsoleLogger.h"
