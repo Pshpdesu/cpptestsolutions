@@ -13,31 +13,30 @@
 class ThreadPool
 {
 public:
-	ThreadPool(int num)
-	{
-		workers.reserve(num);
-		for (int i = 0; i < num; i++) {
-			workers.emplace_back([this]() {
-				for (;;) {
-					std::function<void()> task;
-					{
-						std::unique_lock<std::mutex> lock(this->taskLock);
-						this->condition.wait(lock, [this]() {
-							std::cout << "Waiting~~"<<std::endl;
-							return this->stop.load() || this->tasks.empty();
-							});
-						if (this->stop.load() && this->tasks.empty()) {
-							return;
-						}
-						task = std::move(this->tasks.front());
-						this->tasks.pop();
-					}
-					task();
-				}
-				});
-		}
-	}
-	template<class F, class... Args>
+  ThreadPool(int num) {
+    workers.reserve(num);
+    for (int i = 0; i < num; i++) {
+      workers.emplace_back([this]() {
+        for (;;) {
+          std::function<void()> task;
+          {
+            std::unique_lock<std::mutex> lock(this->taskLock);
+            this->condition.wait(lock, [this]() {
+              std::cout << "Waiting~~" << std::endl;
+              return this->stop.load() || this->tasks.empty();
+            });
+            if (this->stop.load() && this->tasks.empty()) {
+              return;
+            }
+            task = std::move(this->tasks.front());
+            this->tasks.pop();
+          }
+          task();
+        }
+      });
+    }
+  }
+        template<class F, class... Args>
 	auto pushTask(F&& f, Args&& ...args)->std::future<typename std::result_of<F(Args...)>::type>;
 	virtual ~ThreadPool()
 	{
