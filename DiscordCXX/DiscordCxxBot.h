@@ -1,18 +1,8 @@
 #pragma once
-#include "../Extensions/ConcurrentLogger.h"
-#include "../Extensions/SimpleConsoleLogger.h"
-#include "DiscordConstants.h"
-#include <cpprest/filestream.h>
-#include <cpprest/http_client.h>
-#include <cpprest/json.h>
-#include <cpprest/streams.h>
-#include <cpprest/uri.h>
-#include <cpprest/uri_builder.h>
-#include <cpprest/ws_client.h>
-#include <cpprest/ws_msg.h>
-#include <iostream>
-#include <string>
-#include <string_view>
+#include "DiscordHeaders.h"
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 std::shared_ptr<ILogger> LOGGER{std::shared_ptr<ConcurrentLogger>{
     new ConcurrentLogger{std::shared_ptr<loggers::simple_logger>{
@@ -58,10 +48,11 @@ private:
   const std::wstring _base_uri = L"";
 
   web::http::client::http_client _httpClient;
-  uint32_t heartbeat = -1;
+  std::optional<long long> heartbeat;
 
-  web::web_sockets::client::websocket_client _wsClient;
   web::web_sockets::client::websocket_callback_client _wsClbckClient;
+
+  std::atomic_bool _exit_flag;
 
   void process_messages(const std::string &msg) {
     *LOGGER << msg;
@@ -98,24 +89,28 @@ private:
               [this](std::string str) { process_messages(str); });
         });
 
-    //	if (logger.get() != nullptr) {
-    //		*logger << "Message: \n";
-    //		*logger << msg_string;
-    //	}
-
     _wsClbckClient.connect(gateway_resp[L"url"].as_string() +
                            L"?v=6&encoding=json");
-    // auto connection_res =
-    // _wsClient.receive().then([this](websocket_incoming_message msg) {return
-    // msg.body(); }) 	.then([this](govno body)
-    //		{
-    //			return web::json::value(body);
-    //		}
-    //).get();
+  }
 
-    // auto hello_message =
-    // web::json::value(_wsClient.receive().get().extract_string().get());
-    // hello_message[L"d"][L"heartbeat_interval"];
+  void heartbeat_cicle() {
+    std::chrono::time_point start(std::chrono::system_clock::now());
+    std::chrono::time_point stop(std::chrono::system_clock::now());
+    while (_exit_flag.load()) {
+      if (!heartbeat.has_value()) {
+        continue;
+      }
+      stop = std::chrono::system_clock::now();
+      auto govno = (stop - start).count();
+      if (govno >= heartbeat) {
+        start = stop;
+        web::json::value heartbeat;
+        heartbeat[L"op"] = 11;
+        web::websockets::client::websocket_outgoing_message msg;
+        msg.set_utf8_message(heartbeat.serialize());
+        _wsClbckClient.send(msg);
+      }
+    }
   }
 
   web::http::http_request GetBaseRequestBuilder(web::http::method method) {

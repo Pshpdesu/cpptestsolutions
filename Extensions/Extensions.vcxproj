@@ -128,6 +128,7 @@
     <ClInclude Include="ILogger.h" />
     <ClInclude Include="SimpleConsoleLogger.h" />
     <ClInclude Include="TestHeader.h" />
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleConsoleLogger.cpp" />

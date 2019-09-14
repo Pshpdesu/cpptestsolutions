@@ -131,6 +131,11 @@
     <ClInclude Include="DiscordCxxBot.h" />
     <ClInclude Include="Snowflake.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SolutionForTests\SolutionForTests.vcxproj">
+      <Project>{e158978f-fe05-4657-9ac0-ef4ba1b67cc5}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
