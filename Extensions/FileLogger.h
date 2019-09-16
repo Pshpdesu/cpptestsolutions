@@ -1,7 +1,10 @@
 #pragma once
+#include "UtilityHeaders.h"
 #include "ILogger.h"
-#include <filesystem>
-#include <fstream>
+#include "utility.h"
+
+using namespace Utility::string_helpers;
+
 class FileLogger :
 	public ILogger
 {
@@ -26,11 +29,6 @@ public:
 	virtual bool Log(const std::string& val) override
 	{
 		fs << val;
-		return fs.good();
-	}
-	virtual bool Log(const std::wstring& val) override
-	{
-		fs << wstring_to_string(val);
 		return fs.good();
 	}
 

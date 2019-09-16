@@ -1,5 +1,7 @@
 #pragma once
-#include "../SolutionForTests/Headers.h"
+#include "UtilityHeaders.h"
+#include <codecvt>
+#include <string>
 
 namespace Utility {
     namespace string_helpers {

@@ -1,7 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 
-
 #include "Headers.h"
+#include "../DiscordCXX/DiscordCxxBot.h"
+#include "../DiscordCXX/DiscordCredentials.h"
 
 
 int main(int argc, char** argv) {
@@ -11,6 +10,6 @@ int main(int argc, char** argv) {
 	auto a = resp.get();
 	auto c = a.headers();
 	auto b = a.extract_string().get();
-	std::cin.get();
+	while(true){}
 	return 0;
 }

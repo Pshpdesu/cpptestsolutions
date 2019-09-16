@@ -1,4 +1,5 @@
 #pragma once
+#include "DiscordHeaders.h"
 #include <string>
 
 namespace Discord {

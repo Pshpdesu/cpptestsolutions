@@ -1,7 +1,9 @@
 #pragma once
+#include "UtilityHeaders.h"
 #include "ILogger.h"
+#include <memory>
+#include <string>
 #include <mutex>
-#include <thread>
 
 class ConcurrentLogger: public ILogger
 {
@@ -30,10 +32,6 @@ public:
 
 	virtual ILogger& operator<<(const std::string& val) override {
 		Log(val);
-		return *this;
-	};
-	virtual ILogger& operator<<(const std::wstring& val) override {
-		ILogger::Log(val);
 		return *this;
 	};
 private:
