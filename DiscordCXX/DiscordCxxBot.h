@@ -1,8 +1,9 @@
 #pragma once
-#include "DiscordHeaders.h"
-
+#include "../Extensions/ConcurrentLogger.h"
+#include "../Extensions/SimpleConsoleLogger.h"
+#include "DiscordConstants.h"
+#include "DiscordJSONTemplates.hpp"
 #include <chrono>
-#include <optional>
 #include <cpprest/filestream.h>
 #include <cpprest/http_client.h>
 #include <cpprest/json.h>
@@ -11,13 +12,10 @@
 #include <cpprest/uri_builder.h>
 #include <cpprest/ws_client.h>
 #include <cpprest/ws_msg.h>
-#include "../Extensions/ConcurrentLogger.h"
-#include "../Extensions/SimpleConsoleLogger.h"
-#include "DiscordConstants.h"
+#include <optional>
+#include <string>
 
-using namespace std::chrono_literals;
 using namespace web;
-
 
 std::shared_ptr<ILogger> LOGGER{std::shared_ptr<ConcurrentLogger>{
     new ConcurrentLogger{std::shared_ptr<loggers::simple_logger>{
@@ -54,7 +52,10 @@ public:
     return _httpClient.request(reqst);
   }
 
-  ~DiscordCxxBot() { _wsClbckClient.close();  (*LOGGER) << "Connection closed"; }
+  ~DiscordCxxBot() {
+    _wsClbckClient.close();
+    (*LOGGER) << "Connection closed";
+  }
 
 private:
   const std::wstring _token = L"";
@@ -63,42 +64,16 @@ private:
 
   http::client::http_client _httpClient;
   std::optional<uint64_t> heartbeat;
+  std::atomic<bool> is_authorized = false;
+  std::unordered_map<std::string, std::thread> working_threads;
 
   web_sockets::client::websocket_callback_client _wsClbckClient;
 
   std::atomic<bool> _exit_flag;
 
-  void process_messages(const std::string &msg) {
-    *LOGGER << msg;
-    auto json_msg = json::value::parse(utility::conversions::to_utf16string(msg));
-    if (json_msg.has_object_field(L"d") &&
-        json_msg[L"d"].has_field(L"heartbeat_interval")) {
-      auto time = json_msg[L"d"][L"heartbeat_interval"].as_number().to_uint64();
-
-      heartbeat = time;
-
-      json::value heartbeat;
-      heartbeat[L"op"] = 11;
-      websockets::client::websocket_outgoing_message msg;
-      *LOGGER << (L"Hello message: " + heartbeat.serialize());
-      msg.set_utf8_message(Utility::string_helpers::wstring_to_string(heartbeat.serialize()));
-      _wsClbckClient.send(msg).then([](pplx::task<void> t)
-          {
-              try
-              {
-                  (*LOGGER)<<"message was sent";
-              }
-              catch (const web::websockets::client::websocket_exception& ex)
-              {
-                  std::cout << ex.what();
-              }
-          });
-      //auto sleep_for = std::chrono::duration(std::chrono::milliseconds(time));
-      //std::this_thread::sleep_for(sleep_for);
-    }
-  }
-
   void ConnectToWebSocket() {
+    using namespace web_sockets::client;
+
     auto gateway_resp = SendRequest(http::methods::GET, L"/gateway/bot")
                             .then([](http::http_response resp) {
                               (*LOGGER) << "THREAD #" + get_thread_id();
@@ -110,19 +85,56 @@ private:
                               return resp;
                             })
                             .get();
-    using namespace web_sockets::client;
 
     websocket_client_config config;
     typedef Concurrency::streams::istream govno;
     _wsClbckClient.set_message_handler(
         [this](const websocket_incoming_message &msg) -> void {
-          (*LOGGER) << "THREAD #" + get_thread_id();
-          msg.extract_string().then(
-              [this](const std::string str) { process_messages(str); });
+          msg.extract_string().then([this](const std::string str) {
+            process_messages(
+                json::value::parse(utility::conversions::to_string_t(str)));
+          });
         });
 
     _wsClbckClient.connect(gateway_resp[L"url"].as_string() +
                            L"?v=6&encoding=json");
+  }
+
+  void authorization_callback(const json::value &data) {
+    websockets::client::websocket_outgoing_message msg;
+    msg.set_utf8_message(utility::conversions::utf16_to_utf8(
+        Discord::Constants::messages_templates::identification.serialize()));
+    _wsClbckClient.send(msg).then([]() {
+        *LOGGER << L"Message: """ + Discord::Constants::messages_templates::identification.serialize()+L""" was sent";
+        });
+  }
+
+  void process_messages(const json::value &msg) {
+    *LOGGER << msg.serialize();
+    if (msg.has_object_field(L"d") &&
+        msg.at(L"d").has_field(L"heartbeat_interval")) {
+      if (!is_authorized.load()) {
+        authorization_callback(msg);
+        return;
+      }
+      auto time =
+          msg.at(L"d").at(L"heartbeat_interval").as_number().to_uint64();
+
+      heartbeat = time;
+
+      json::value heartbeat;
+      heartbeat[L"op"] = 11;
+      websockets::client::websocket_outgoing_message msg;
+      *LOGGER << (L"Hello message: " + heartbeat.serialize());
+      msg.set_utf8_message(
+          Utility::string_helpers::wstring_to_string(heartbeat.serialize()));
+      _wsClbckClient.send(msg).then([](pplx::task<void> t) {
+        (*LOGGER) << "message was sent";
+      });
+      // auto sleep_for =
+      // std::chrono::duration(std::chrono::milliseconds(time));
+      // std::this_thread::sleep_for(sleep_for);
+    }
   }
 
   void heartbeat_cicle() {
@@ -140,8 +152,10 @@ private:
         json::value heartbeat;
         heartbeat[L"op"] = 11;
         websockets::client::websocket_outgoing_message msg;
-        msg.set_utf8_message(Utility::string_helpers::wstring_to_string(heartbeat.serialize()));
-        _wsClbckClient.send(msg).then([]() {*LOGGER << "Hello message was sent"; });
+        msg.set_utf8_message(
+            Utility::string_helpers::wstring_to_string(heartbeat.serialize()));
+        _wsClbckClient.send(msg).then(
+            []() { *LOGGER << "Hello message was sent"; });
       }
     }
   }

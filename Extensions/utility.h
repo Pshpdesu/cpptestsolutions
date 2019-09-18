@@ -1,5 +1,4 @@
 #pragma once
-#include "UtilityHeaders.h"
 #include <codecvt>
 #include <string>
 

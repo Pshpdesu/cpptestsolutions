@@ -1,5 +1,4 @@
 #pragma once
-#include "UtilityHeaders.h"
 #include "ILogger.h"
 #include <memory>
 #include <string>

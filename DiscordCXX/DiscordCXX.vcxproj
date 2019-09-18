@@ -141,6 +141,7 @@
     <ClInclude Include="DiscordConstants.h" />
     <ClInclude Include="DiscordCredentials.h" />
     <ClInclude Include="DiscordCxxBot.h" />
+    <ClInclude Include="DiscordJSONTemplates.hpp" />
     <ClInclude Include="Snowflake.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -32,5 +32,8 @@
     <ClInclude Include="DiscordCredentials.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DiscordJSONTemplates.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

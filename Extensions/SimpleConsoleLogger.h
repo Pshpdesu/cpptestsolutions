@@ -1,7 +1,7 @@
 #pragma once
-#include "UtilityHeaders.h"
 #include "./ILogger.h"
 #include <iomanip>
+#include <iostream>
 
 namespace loggers {
     class simple_logger : public ILogger {
