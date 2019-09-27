@@ -10,6 +10,8 @@ int main(int argc, char** argv) {
 	auto a = resp.get();
 	auto c = a.headers();
 	auto b = a.extract_string().get();
-	while(true){}
+	while(true){
+        std::cin.get();
+    }
 	return 0;
 }

@@ -31,6 +31,12 @@ const auto identification = ([]() -> value {
   res[L"d"] = obj;
   return res;
 })();
+
+const auto heartbeat = ([]() -> value {
+    auto res = value(payload);
+    res[L"op"] = value::number(11);
+    return res;
+    })();
 } // namespace messages_templates
 } // namespace Constants
 } // namespace Discord

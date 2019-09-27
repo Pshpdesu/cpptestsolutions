@@ -16,6 +16,7 @@
 #include <string>
 
 using namespace web;
+using namespace std::chrono;
 
 std::shared_ptr<ILogger> LOGGER{std::shared_ptr<ConcurrentLogger>{
     new ConcurrentLogger{std::shared_ptr<loggers::simple_logger>{
@@ -54,6 +55,8 @@ public:
 
   ~DiscordCxxBot() {
     _wsClbckClient.close();
+    _exit_flag = true;
+    heartbeat_thread.join();
     (*LOGGER) << "Connection closed";
   }
 
@@ -64,8 +67,9 @@ private:
 
   http::client::http_client _httpClient;
   std::optional<uint64_t> heartbeat;
+  std::optional<json::value> last_s;
   std::atomic<bool> is_authorized = false;
-  std::unordered_map<std::string, std::thread> working_threads;
+  std::thread heartbeat_thread;
 
   web_sockets::client::websocket_callback_client _wsClbckClient;
 
@@ -74,20 +78,27 @@ private:
   void ConnectToWebSocket() {
     using namespace web_sockets::client;
 
-    auto gateway_resp = SendRequest(http::methods::GET, L"/gateway/bot")
-                            .then([](http::http_response resp) {
-                              (*LOGGER) << "THREAD #" + get_thread_id();
-                              return resp.extract_json();
-                            })
-                            .then([](json::value resp) {
-                              (*LOGGER) << "THREAD #" + get_thread_id();
-                              (*LOGGER) << resp.serialize();
-                              return resp;
-                            })
-                            .get();
+    auto gateway_resp =
+        SendRequest(http::methods::GET, L"/gateway/bot")
+            .then([](http::http_response resp) { return resp.extract_json(); })
+            .then([](json::value resp) {
+              (*LOGGER) << resp.serialize();
+              return resp;
+            })
+            .get();
 
     websocket_client_config config;
     typedef Concurrency::streams::istream govno;
+    _wsClbckClient.set_close_handler(
+        [this](websocket_close_status status,
+               utility::string_t reason, std::error_code error) {
+          _exit_flag = true;
+          *LOGGER << "Web socket was closed. Reason: " +
+                         Utility::string_helpers::wstring_to_string(reason);
+          *LOGGER << "Websocket close status: "+error.message();
+          heartbeat_thread.join();
+          std::terminate();
+        });
     _wsClbckClient.set_message_handler(
         [this](const websocket_incoming_message &msg) -> void {
           msg.extract_string().then([this](const std::string str) {
@@ -101,62 +112,48 @@ private:
   }
 
   void authorization_callback(const json::value &data) {
-    websockets::client::websocket_outgoing_message msg;
-    msg.set_utf8_message(utility::conversions::utf16_to_utf8(
-        Discord::Constants::messages_templates::identification.serialize()));
-    _wsClbckClient.send(msg).then([]() {
-        *LOGGER << L"Message: """ + Discord::Constants::messages_templates::identification.serialize()+L""" was sent";
+    send_message(Discord::Constants::messages_templates::identification)
+        .then([]() {
+          *LOGGER << L"Message: "
+                     "" +
+                         Discord::Constants::messages_templates::identification
+                             .serialize() +
+                         L""
+                         " was sent";
         });
+    is_authorized = true;
   }
 
   void process_messages(const json::value &msg) {
     *LOGGER << msg.serialize();
+    if (msg.has_field(L"s")) {
+      last_s = msg.at(L"s");
+    }
     if (msg.has_object_field(L"d") &&
         msg.at(L"d").has_field(L"heartbeat_interval")) {
       if (!is_authorized.load()) {
         authorization_callback(msg);
+        heartbeat =
+            msg.at(L"d").at(L"heartbeat_interval").as_number().to_uint64();
+        heartbeat_thread = std::thread([this]() {
+          heartbeat_cicle();
+          *LOGGER << "Heartbeat thread closed;";
+        });
         return;
       }
-      auto time =
-          msg.at(L"d").at(L"heartbeat_interval").as_number().to_uint64();
-
-      heartbeat = time;
-
-      json::value heartbeat;
-      heartbeat[L"op"] = 11;
-      websockets::client::websocket_outgoing_message msg;
-      *LOGGER << (L"Hello message: " + heartbeat.serialize());
-      msg.set_utf8_message(
-          Utility::string_helpers::wstring_to_string(heartbeat.serialize()));
-      _wsClbckClient.send(msg).then([](pplx::task<void> t) {
-        (*LOGGER) << "message was sent";
-      });
-      // auto sleep_for =
-      // std::chrono::duration(std::chrono::milliseconds(time));
-      // std::this_thread::sleep_for(sleep_for);
     }
   }
 
   void heartbeat_cicle() {
-    std::chrono::time_point start{std::chrono::system_clock::now()};
-    std::chrono::time_point stop{std::chrono::system_clock::now()};
-
-    while (_exit_flag.load()) {
-      if (!heartbeat.has_value()) {
-        continue;
+    while (!_exit_flag.load()) {
+      std::this_thread::sleep_for(milliseconds(heartbeat.value() - 5));
+      if (_exit_flag.load()) {
+        return;
       }
-      stop = std::chrono::system_clock::now();
-      auto govno = (stop - start).count();
-      if (govno >= heartbeat.value()) {
-        start = stop;
-        json::value heartbeat;
-        heartbeat[L"op"] = 11;
-        websockets::client::websocket_outgoing_message msg;
-        msg.set_utf8_message(
-            Utility::string_helpers::wstring_to_string(heartbeat.serialize()));
-        _wsClbckClient.send(msg).then(
-            []() { *LOGGER << "Hello message was sent"; });
-      }
+      send_message(Discord::Constants::messages_templates::heartbeat)
+          .then([]() {
+            *LOGGER << "Heartbeat was sent. Heartbeat interval: NaN";
+          });
     }
   }
 
@@ -170,5 +167,15 @@ private:
     reqst._set_base_uri(_base_uri);
     reqst.headers().set_content_type(L"application/json");
     return std::move(reqst);
+  }
+
+  Concurrency::task<void> send_message(json::value message) {
+    websockets::client::websocket_outgoing_message msg;
+    if (message[L"op"].as_number().to_int64() == 1)
+      message[L"d"] = last_s.has_value() ? last_s.value() : json::value::null();
+    *LOGGER << Utility::string_helpers::wstring_to_string(message.serialize());
+    msg.set_utf8_message(
+        Utility::string_helpers::wstring_to_string(message.serialize()));
+    return _wsClbckClient.send(msg);
   }
 };
