@@ -1,9 +1,11 @@
 #pragma once
 #include "UtilityHeaders.h"
 #include "utility.h"
+#include <iostream>
 
 class ILogger {
 public:
+  ILogger() {}
   virtual bool Log(const std::string &val) = 0;
 
   virtual bool Log(const std::wstring &val) final {
@@ -14,10 +16,7 @@ public:
     *this << Utility::string_helpers::wstring_to_string(val);
     return *this;
   };
+
 protected:
-    virtual ~ILogger() {};
-  // virtual std::wstring string_to_wstring(const std::string& val) final
-  //{
-  //
-  //};
+  virtual ~ILogger() noexcept {};
 };

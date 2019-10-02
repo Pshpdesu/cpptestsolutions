@@ -11,7 +11,7 @@ namespace loggers {
         simple_logger()
             :output(std::cout.rdbuf())
         {
-            output.imbue(std::locale("en"));
+            const auto _ = output.imbue(std::locale("en"));
         }
         virtual bool Log(const std::string& val) override {
             /*auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());*/

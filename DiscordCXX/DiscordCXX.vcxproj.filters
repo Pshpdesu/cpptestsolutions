@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{fd479996-3912-4a51-ac20-f9704afb78cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DiscordHeaders.h">
@@ -34,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="DiscordJSONTemplates.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DiscordUtilities.h">
+      <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

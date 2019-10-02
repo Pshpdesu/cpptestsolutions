@@ -34,7 +34,7 @@ const auto identification = ([]() -> value {
 
 const auto heartbeat = ([]() -> value {
     auto res = value(payload);
-    res[L"op"] = value::number(11);
+    res[L"op"] = value::number(1);
     return res;
     })();
 } // namespace messages_templates
